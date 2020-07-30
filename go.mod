@@ -6,19 +6,18 @@ require (
 	github.com/BurntSushi/toml v0.3.1
 	github.com/bilibili/discovery v0.0.0-00010101000000-000000000000
 	github.com/bsm/sarama-cluster v2.1.15+incompatible
+	github.com/clouderwork/workchat v0.0.0-20200730125414-c68224f36b0f
 	github.com/gin-contrib/sse v0.1.0 // indirect
-	github.com/gin-gonic/gin v1.3.0
+	github.com/gin-gonic/gin v1.6.3
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
-	github.com/golang/protobuf v1.4.1
+	github.com/golang/protobuf v1.4.2
 	github.com/gomodule/redigo v2.0.0+incompatible
 	github.com/google/uuid v1.1.1
-	github.com/pierrec/lz4 v2.0.5+incompatible // indirect
-	github.com/stretchr/testify v1.4.0
-	github.com/ugorji/go/codec v0.0.0-20190204201341-e444a5086c43 // indirect
+	github.com/stretchr/testify v1.5.1
 	github.com/zhenjl/cityhash v0.0.0-20131128155616-cdd6a94144ab
-	golang.org/x/net v0.0.0-20191011234655-491137f69257
+	golang.org/x/net v0.0.0-20200707034311-ab3426394381
 	google.golang.org/grpc v1.30.0
-	google.golang.org/protobuf v1.24.0
+	google.golang.org/protobuf v1.25.0
 	gopkg.in/Shopify/sarama.v1 v1.19.0
 	gopkg.in/go-playground/validator.v8 v8.18.2 // indirect
 )

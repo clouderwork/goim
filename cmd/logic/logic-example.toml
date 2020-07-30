@@ -40,6 +40,7 @@
 
 [kafka]
     topic = "goim-push-topic"
+    callTopicPre = "goim-push-topic" # 上行调用request的topic前缀
     brokers = ["127.0.0.1:9092"]
 
 [redis]

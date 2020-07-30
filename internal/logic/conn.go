@@ -31,6 +31,9 @@ func (l *Logic) Connect(c context.Context, server, cookie string, token []byte) 
 	if key = params.Key; key == "" {
 		key = uuid.New().String()
 	}
+	if err = l.VerifyLoginAndDeviceOnline(cookie, key, mid, roomID, params.Platform); err != nil {
+		log.Errorf("l.VerifyLoginAndDeviceOnline(%d,%s,%s) error(%v)", mid, key, server, err)
+	}
 	if err = l.dao.AddMapping(c, mid, key, server); err != nil {
 		log.Errorf("l.dao.AddMapping(%d,%s,%s) error(%v)", mid, key, server, err)
 	}
@@ -44,6 +47,7 @@ func (l *Logic) Disconnect(c context.Context, mid int64, key, server string) (ha
 		log.Errorf("l.dao.DelMapping(%d,%s) error(%v)", mid, key, server)
 		return
 	}
+	l.DeviceOffline(key, mid)
 	log.Infof("conn disconnected key:%s server:%s mid:%d", key, server, mid)
 	return
 }
@@ -80,6 +84,7 @@ func (l *Logic) RenewOnline(c context.Context, server string, roomCount map[stri
 
 // Receive receive a message.
 func (l *Logic) Receive(c context.Context, mid int64, proto *grpc.Proto) (err error) {
+	err = l.dao.Dispatch(c, mid, proto)
 	log.Infof("receive mid:%d message:%+v", mid, proto)
 	return
 }

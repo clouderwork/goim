@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/Terry-Mao/goim/api/comet/grpc"
 	"github.com/Terry-Mao/goim/internal/logic/conf"
 	"github.com/Terry-Mao/goim/internal/logic/dao"
 	"github.com/Terry-Mao/goim/internal/logic/model"
@@ -30,6 +31,11 @@ type Logic struct {
 	nodes        []*naming.Instance
 	loadBalancer *LoadBalancer
 	regions      map[string]string // province -> region
+
+	Dispatch func(ctx context.Context, mid int64, proto *grpc.Proto) error // 分发上行消息，进行逻辑处理
+	// VerifyLoginAndDeviceOnline(cookie, key, params.RoomID, params.Platform)
+	VerifyLoginAndDeviceOnline func(cookie string, deviceID string, mid int64, roomID string, platform string) error // 验证建立连接的cookie是否有效，并记录设备上线
+	DeviceOffline              func(deviceID string, mid int64)                                                      // 记录用户设备下线
 }
 
 // New init

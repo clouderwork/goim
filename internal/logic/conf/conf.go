@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/bilibili/discovery/naming"
 	xtime "github.com/Terry-Mao/goim/pkg/time"
+	"github.com/bilibili/discovery/naming"
 
 	"github.com/BurntSushi/toml"
 )
@@ -129,8 +129,9 @@ type Redis struct {
 
 // Kafka .
 type Kafka struct {
-	Topic   string
-	Brokers []string
+	Topic        string
+	CallTopicPre string
+	Brokers      []string
 }
 
 // RPCClient is RPC client config.
