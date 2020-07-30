@@ -2,10 +2,9 @@ syntax = "proto3";
 
 package goim.logic;
 
-option go_package = "grpc";
+option go_package = "github.com/Terry-Mao/goim/api/logic/grpc;grpc";
 
-import "github.com/Terry-Mao/goim/api/comet/grpc/api.proto";
-import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+import "api/comet/grpc/api.proto";
 
 message PushMsg {
     enum Type {
@@ -35,7 +34,6 @@ message PingReq {
 }
 
 message ConnectReq {
-    option (gogoproto.goproto_stringer) = false;
     string server = 1;
     string cookie = 2;
     bytes token = 3;
@@ -69,13 +67,11 @@ message HeartbeatReply {
 }
 
 message OnlineReq {
-    option (gogoproto.goproto_stringer) = false;
     string server = 1;
     map<string, int32> roomCount = 2;
 }
 
 message OnlineReply {
-    option (gogoproto.goproto_stringer) = false;
     map<string, int32> allRoomCount = 1;
 }
 
@@ -93,27 +89,27 @@ message NodesReq {
 }
 
 message NodesReply {
-	string domain = 1 [(gogoproto.jsontag) = "domain"];
-	int32 tcpPort = 2 [(gogoproto.jsontag) = "tcp_port"];
-	int32 wsPort = 3 [(gogoproto.jsontag) = "ws_port"];
-	int32 wssPort = 4 [(gogoproto.jsontag) = "wss_port"];
-	int32 heartbeat = 5 [(gogoproto.jsontag) = "heartbeat"];
-	repeated string nodes = 6 [(gogoproto.jsontag) = "nodes"];
-	Backoff backoff = 7 [(gogoproto.jsontag) = "backoff"];
-	int32 heartbeatMax = 8 [(gogoproto.jsontag) = "heartbeat_max"];
+	string domain = 1;
+	int32 tcpPort = 2;
+	int32 wsPort = 3;
+	int32 wssPort = 4;
+	int32 heartbeat = 5;
+	repeated string nodes = 6;
+	Backoff backoff = 7;
+	int32 heartbeatMax = 8;
 }
 
 message Backoff {
-	int32	MaxDelay = 1 [(gogoproto.jsontag) = "max_delay"];
-	int32	BaseDelay = 2 [(gogoproto.jsontag) = "base_delay"];
-	float	Factor = 3 [(gogoproto.jsontag) = "factor"];
-	float	Jitter = 4 [(gogoproto.jsontag) = "jitter"];
+	int32	MaxDelay = 1;
+	int32	BaseDelay = 2;
+	float	Factor = 3;
+	float	Jitter = 4;
 }
 
 service Logic {
-    // Ping Service 
+    // Ping Service
     rpc Ping(PingReq) returns(PingReply);
-    // Close Service 
+    // Close Service
     rpc Close(CloseReq) returns(CloseReply);
     // Connect
     rpc Connect(ConnectReq) returns (ConnectReply);

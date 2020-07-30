@@ -29,3 +29,18 @@ stop:
 	pkill -f target/logic
 	pkill -f target/job
 	pkill -f target/comet
+
+.PYONY: protobuf
+protobuf:
+	@mkdir -p target
+	protoc \
+		-I . \
+		--go_out=plugins=grpc:./target \
+		api/logic/grpc/api.proto
+	protoc \
+		-I . \
+		--go_out=plugins=grpc:./target \
+		api/comet/grpc/api.proto
+	mv ./target/github.com/Terry-Mao/goim/api/comet/grpc/api.pb.go api/comet/grpc/
+	mv ./target/github.com/Terry-Mao/goim/api/logic/grpc/api.pb.go api/logic/grpc/
+

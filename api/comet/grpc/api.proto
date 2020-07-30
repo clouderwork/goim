@@ -1,19 +1,17 @@
 syntax = "proto3";
 
 package goim.comet;
-option go_package = "grpc";
-
-import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+option go_package = "github.com/Terry-Mao/goim/api/comet/grpc;grpc";
 
 /*
  * v1.0.0
  * protocol
  */
 message Proto {
-    int32 ver = 1 [(gogoproto.jsontag) = "ver"];
-    int32 op = 2 [(gogoproto.jsontag) = "op"];
-    int32 seq = 3 [(gogoproto.jsontag) = "seq"];
-    bytes body = 4 [(gogoproto.jsontag) = "body"];
+    int32 ver = 1;
+    int32 op = 2;
+    int32 seq = 3;
+    bytes body = 4;
 }
 
 message Empty{}
@@ -44,15 +42,14 @@ message BroadcastRoomReply{}
 message RoomsReq{}
 
 message RoomsReply {
-    option (gogoproto.goproto_stringer) = false;
     map<string,bool> rooms = 1;
 }
 
-service Comet { 
-    // Ping Service 
-    rpc Ping(Empty) returns(Empty); 
-    // Close Service 
-    rpc Close(Empty) returns(Empty); 
+service Comet {
+    // Ping Service
+    rpc Ping(Empty) returns(Empty);
+    // Close Service
+    rpc Close(Empty) returns(Empty);
     //PushMsg push by key or mid
     rpc PushMsg(PushMsgReq) returns (PushMsgReply);
     // Broadcast send to every enrity
