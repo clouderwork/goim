@@ -32,6 +32,11 @@
     dial = "1s"
     timeout = "1s"
 
+[userRpcClient]
+    host = "127.0.0.1:8800"
+    dial = "1s"
+    timeout = "1s"
+
 [httpServer]
     network = "tcp"
     addr = ":3111"

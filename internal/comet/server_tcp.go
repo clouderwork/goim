@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/Terry-Mao/goim/api/comet/grpc"
+	logicapi "github.com/Terry-Mao/goim/api/logic/grpc"
 	"github.com/Terry-Mao/goim/internal/comet/conf"
 	"github.com/Terry-Mao/goim/pkg/bufio"
 	"github.com/Terry-Mao/goim/pkg/bytes"
@@ -126,7 +127,7 @@ func (s *Server) ServeTCP(conn *net.TCPConn, rp, wp *bytes.Pool, tr *xtime.Timer
 	// must not setadv, only used in auth
 	step = 1
 	if p, err = ch.CliProto.Set(); err == nil {
-		if ch.Mid, ch.Key, rid, accepts, hb, err = s.authTCP(ctx, rr, wr, p); err == nil {
+		if ch.Mid, ch.Key, ch.Platform, rid, accepts, hb, err = s.authTCP(ctx, rr, wr, p); err == nil {
 			ch.Watch(accepts...)
 			b = s.Bucket(ch.Key)
 			err = b.Put(rid, ch)
@@ -323,7 +324,7 @@ failed:
 }
 
 // auth for goim handshake with client, use rsa & aes.
-func (s *Server) authTCP(ctx context.Context, rr *bufio.Reader, wr *bufio.Writer, p *grpc.Proto) (mid int64, key, rid string, accepts []int32, hb time.Duration, err error) {
+func (s *Server) authTCP(ctx context.Context, rr *bufio.Reader, wr *bufio.Writer, p *grpc.Proto) (mid logicapi.MidType, key string, platform string, rid string, accepts []int32, hb time.Duration, err error) {
 	for {
 		if err = p.ReadTCP(rr); err != nil {
 			return
@@ -334,7 +335,7 @@ func (s *Server) authTCP(ctx context.Context, rr *bufio.Reader, wr *bufio.Writer
 			log.Errorf("tcp request operation(%d) not auth", p.Op)
 		}
 	}
-	if mid, key, rid, accepts, hb, err = s.Connect(ctx, p, ""); err != nil {
+	if mid, key, platform, rid, accepts, hb, err = s.Connect(ctx, p, ""); err != nil {
 		log.Errorf("authTCP.Connect(key:%v).err(%v)", key, err)
 		return
 	}

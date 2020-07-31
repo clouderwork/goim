@@ -6,19 +6,21 @@ import (
 	"time"
 
 	"github.com/Terry-Mao/goim/api/comet/grpc"
+	logicapi "github.com/Terry-Mao/goim/api/logic/grpc"
 	"github.com/Terry-Mao/goim/internal/logic/model"
+	"github.com/clouderwork/workchat/api/pbuser"
 	log "github.com/golang/glog"
 	"github.com/google/uuid"
 )
 
 // Connect connected a conn.
-func (l *Logic) Connect(c context.Context, server, cookie string, token []byte) (mid int64, key, roomID string, accepts []int32, hb int64, err error) {
+func (l *Logic) Connect(c context.Context, server, cookie string, token []byte) (mid logicapi.MidType, key, roomID string, accepts []int32, hb int64, err error) {
 	var params struct {
-		Mid      int64   `json:"mid"`
-		Key      string  `json:"key"`
-		RoomID   string  `json:"room_id"`
-		Platform string  `json:"platform"`
-		Accepts  []int32 `json:"accepts"`
+		Mid      logicapi.MidType `json:"mid"`
+		Key      string           `json:"key"`
+		RoomID   string           `json:"room_id"`
+		Platform string           `json:"platform"`
+		Accepts  []int32          `json:"accepts"`
 	}
 	if err = json.Unmarshal(token, &params); err != nil {
 		log.Errorf("json.Unmarshal(%s) error(%v)", token, err)
@@ -31,7 +33,13 @@ func (l *Logic) Connect(c context.Context, server, cookie string, token []byte) 
 	if key = params.Key; key == "" {
 		key = uuid.New().String()
 	}
-	if err = l.VerifyLoginAndDeviceOnline(cookie, key, mid, roomID, params.Platform); err != nil {
+	if _, err = l.userClient.AuthAndDeviceOnline(c, &pbuser.AuthAndDeviceOnlineReq{
+		Cookie:      cookie,
+		DeviceId:    key,
+		UserId:      string(mid),
+		WorkspaceId: roomID,
+		Platform:    params.Platform,
+	}); err != nil {
 		log.Errorf("l.VerifyLoginAndDeviceOnline(%d,%s,%s) error(%v)", mid, key, server, err)
 	}
 	if err = l.dao.AddMapping(c, mid, key, server); err != nil {
@@ -42,18 +50,21 @@ func (l *Logic) Connect(c context.Context, server, cookie string, token []byte) 
 }
 
 // Disconnect disconnect a conn.
-func (l *Logic) Disconnect(c context.Context, mid int64, key, server string) (has bool, err error) {
+func (l *Logic) Disconnect(c context.Context, mid logicapi.MidType, key, server string) (has bool, err error) {
 	if has, err = l.dao.DelMapping(c, mid, key, server); err != nil {
 		log.Errorf("l.dao.DelMapping(%d,%s) error(%v)", mid, key, server)
 		return
 	}
-	l.DeviceOffline(key, mid)
+	l.userClient.DeviceOffline(c, &pbuser.DeviceOfflineReq{
+		DeviceId: key,
+		UserId:   string(mid),
+	})
 	log.Infof("conn disconnected key:%s server:%s mid:%d", key, server, mid)
 	return
 }
 
 // Heartbeat heartbeat a conn.
-func (l *Logic) Heartbeat(c context.Context, mid int64, key, server string) (err error) {
+func (l *Logic) Heartbeat(c context.Context, mid logicapi.MidType, key, server string) (err error) {
 	has, err := l.dao.ExpireMapping(c, mid, key)
 	if err != nil {
 		log.Errorf("l.dao.ExpireMapping(%d,%s,%s) error(%v)", mid, key, server, err)
@@ -83,8 +94,8 @@ func (l *Logic) RenewOnline(c context.Context, server string, roomCount map[stri
 }
 
 // Receive receive a message.
-func (l *Logic) Receive(c context.Context, mid int64, proto *grpc.Proto) (err error) {
-	err = l.dao.Dispatch(c, mid, proto)
+func (l *Logic) Receive(c context.Context, deviceID string, mid logicapi.MidType, platform string, proto *grpc.Proto) (err error) {
+	err = l.dao.Dispatch(c, deviceID, mid, platform, proto)
 	log.Infof("receive mid:%d message:%+v", mid, proto)
 	return
 }

@@ -72,16 +72,17 @@ func Default() *Config {
 
 // Config config.
 type Config struct {
-	Env        *Env
-	Discovery  *naming.Config
-	RPCClient  *RPCClient
-	RPCServer  *RPCServer
-	HTTPServer *HTTPServer
-	Kafka      *Kafka
-	Redis      *Redis
-	Node       *Node
-	Backoff    *Backoff
-	Regions    map[string][]string
+	Env           *Env
+	Discovery     *naming.Config
+	RPCClient     *RPCClient
+	UserRPCClient *UserRPCClient
+	RPCServer     *RPCServer
+	HTTPServer    *HTTPServer
+	Kafka         *Kafka
+	Redis         *Redis
+	Node          *Node
+	Backoff       *Backoff
+	Regions       map[string][]string
 }
 
 // Env is env config.
@@ -132,6 +133,13 @@ type Kafka struct {
 	Topic        string
 	CallTopicPre string
 	Brokers      []string
+}
+
+// user RPCClient is RPC client config.
+type UserRPCClient struct {
+	Host    string
+	Dial    xtime.Duration
+	Timeout xtime.Duration
 }
 
 // RPCClient is RPC client config.

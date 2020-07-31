@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strconv"
 
+	logicapi "github.com/Terry-Mao/goim/api/logic/grpc"
 	"github.com/Terry-Mao/goim/internal/logic/model"
 	log "github.com/golang/glog"
 	"github.com/gomodule/redigo/redis"
@@ -14,13 +15,13 @@ import (
 )
 
 const (
-	_prefixMidServer    = "mid_%d" // mid -> key:server
+	_prefixMidServer    = "mid_%s" // mid -> key:server
 	_prefixKeyServer    = "key_%s" // key -> server
 	_prefixServerOnline = "ol_%s"  // server -> online
 )
 
-func keyMidServer(mid int64) string {
-	return fmt.Sprintf(_prefixMidServer, mid)
+func keyMidServer(mid logicapi.MidType) string {
+	return fmt.Sprintf(_prefixMidServer, string(mid))
 }
 
 func keyKeyServer(key string) string {
@@ -43,11 +44,11 @@ func (d *Dao) pingRedis(c context.Context) (err error) {
 // Mapping:
 //	mid -> key_server
 //	key -> server
-func (d *Dao) AddMapping(c context.Context, mid int64, key, server string) (err error) {
+func (d *Dao) AddMapping(c context.Context, mid logicapi.MidType, key, server string) (err error) {
 	conn := d.redis.Get()
 	defer conn.Close()
 	var n = 2
-	if mid > 0 {
+	if mid.IsNotZero() {
 		if err = conn.Send("HSET", keyMidServer(mid), key, server); err != nil {
 			log.Errorf("conn.Send(HSET %d,%s,%s) error(%v)", mid, server, key, err)
 			return
@@ -80,11 +81,11 @@ func (d *Dao) AddMapping(c context.Context, mid int64, key, server string) (err 
 }
 
 // ExpireMapping expire a mapping.
-func (d *Dao) ExpireMapping(c context.Context, mid int64, key string) (has bool, err error) {
+func (d *Dao) ExpireMapping(c context.Context, mid logicapi.MidType, key string) (has bool, err error) {
 	conn := d.redis.Get()
 	defer conn.Close()
 	var n = 1
-	if mid > 0 {
+	if mid.IsNotZero() {
 		if err = conn.Send("EXPIRE", keyMidServer(mid), d.redisExpire); err != nil {
 			log.Errorf("conn.Send(EXPIRE %d,%s) error(%v)", mid, key, err)
 			return
@@ -109,11 +110,11 @@ func (d *Dao) ExpireMapping(c context.Context, mid int64, key string) (has bool,
 }
 
 // DelMapping del a mapping.
-func (d *Dao) DelMapping(c context.Context, mid int64, key, server string) (has bool, err error) {
+func (d *Dao) DelMapping(c context.Context, mid logicapi.MidType, key, server string) (has bool, err error) {
 	conn := d.redis.Get()
 	defer conn.Close()
 	n := 1
-	if mid > 0 {
+	if mid.IsNotZero() {
 		if err = conn.Send("HDEL", keyMidServer(mid), key); err != nil {
 			log.Errorf("conn.Send(HDEL %d,%s,%s) error(%v)", mid, key, server, err)
 			return
@@ -152,7 +153,7 @@ func (d *Dao) ServersByKeys(c context.Context, keys []string) (res []string, err
 }
 
 // KeysByMids get a key server by mid.
-func (d *Dao) KeysByMids(c context.Context, mids []int64) (ress map[string]string, olMids []int64, err error) {
+func (d *Dao) KeysByMids(c context.Context, mids []logicapi.MidType) (ress map[string]string, olMids []logicapi.MidType, err error) {
 	conn := d.redis.Get()
 	defer conn.Close()
 	ress = make(map[string]string)

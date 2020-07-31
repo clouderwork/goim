@@ -5,12 +5,13 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/Terry-Mao/goim/api/comet/grpc"
 	"github.com/Terry-Mao/goim/internal/logic/conf"
 	"github.com/Terry-Mao/goim/internal/logic/dao"
 	"github.com/Terry-Mao/goim/internal/logic/model"
 	"github.com/bilibili/discovery/naming"
+	ucli "github.com/clouderwork/workchat/clientlib/user"
 	log "github.com/golang/glog"
+	"google.golang.org/grpc"
 )
 
 const (
@@ -32,20 +33,22 @@ type Logic struct {
 	loadBalancer *LoadBalancer
 	regions      map[string]string // province -> region
 
-	Dispatch func(ctx context.Context, mid int64, proto *grpc.Proto) error // 分发上行消息，进行逻辑处理
-	// VerifyLoginAndDeviceOnline(cookie, key, params.RoomID, params.Platform)
-	VerifyLoginAndDeviceOnline func(cookie string, deviceID string, mid int64, roomID string, platform string) error // 验证建立连接的cookie是否有效，并记录设备上线
-	DeviceOffline              func(deviceID string, mid int64)                                                      // 记录用户设备下线
+	userClient ucli.UserServiceClient
 }
 
 // New init
 func New(c *conf.Config) (l *Logic) {
+	conn, err := grpc.Dial(c.UserRPCClient.Host, grpc.WithInsecure())
+	if err != nil {
+		panic(err.Error())
+	}
 	l = &Logic{
 		c:            c,
 		dao:          dao.New(c),
 		dis:          naming.New(c.Discovery),
 		loadBalancer: NewLoadBalancer(),
 		regions:      make(map[string]string),
+		userClient:   ucli.NewGRPCUserServiceClient(conn),
 	}
 	l.initRegions()
 	l.initNodes()

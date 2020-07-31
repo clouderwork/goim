@@ -3,6 +3,7 @@ package logic
 import (
 	"context"
 
+	logicapi "github.com/Terry-Mao/goim/api/logic/grpc"
 	"github.com/Terry-Mao/goim/internal/logic/model"
 
 	log "github.com/golang/glog"
@@ -30,7 +31,7 @@ func (l *Logic) PushKeys(c context.Context, op int32, seq int32, keys []string, 
 }
 
 // PushMids push a message by mid.
-func (l *Logic) PushMidsWithoutKeys(c context.Context, op int32, seq int32, mids []int64, withoutKeys map[string]struct{}, msg []byte) (err error) {
+func (l *Logic) PushMidsWithoutKeys(c context.Context, op int32, seq int32, mids []logicapi.MidType, withoutKeys map[string]struct{}, msg []byte) (err error) {
 	keyServers, _, err := l.dao.KeysByMids(c, mids)
 	if err != nil {
 		return
@@ -55,7 +56,7 @@ func (l *Logic) PushMidsWithoutKeys(c context.Context, op int32, seq int32, mids
 }
 
 // PushMids push a message by mid.
-func (l *Logic) PushMids(c context.Context, op int32, seq int32, mids []int64, msg []byte) (err error) {
+func (l *Logic) PushMids(c context.Context, op int32, seq int32, mids []logicapi.MidType, msg []byte) (err error) {
 	keyServers, _, err := l.dao.KeysByMids(c, mids)
 	if err != nil {
 		return

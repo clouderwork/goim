@@ -19,6 +19,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	logicapi "github.com/Terry-Mao/goim/api/logic/grpc"
 	log "github.com/golang/glog"
 )
 
@@ -46,11 +47,11 @@ type Proto struct {
 
 // AuthToken auth token.
 type AuthToken struct {
-	Mid      int64   `json:"mid"`
-	Key      string  `json:"key"`
-	RoomID   string  `json:"room_id"`
-	Platform string  `json:"platform"`
-	Accepts  []int32 `json:"accepts"`
+	Mid      logicapi.MidType `json:"mid"`
+	Key      string           `json:"key"`
+	RoomID   string           `json:"room_id"`
+	Platform string           `json:"platform"`
+	Accepts  []int32          `json:"accepts"`
 }
 
 var (
@@ -71,7 +72,7 @@ func main() {
 	}
 	go result()
 	for i := begin; i < begin+num; i++ {
-		go client(int64(i))
+		go client(strconv.Itoa(i))
 	}
 	// signal
 	var exit chan bool
@@ -93,14 +94,14 @@ func result() {
 	}
 }
 
-func client(mid int64) {
+func client(mid logicapi.MidType) {
 	for {
 		startClient(mid)
 		time.Sleep(time.Duration(rand.Intn(10)) * time.Second)
 	}
 }
 
-func startClient(key int64) {
+func startClient(key logicapi.MidType) {
 	time.Sleep(time.Duration(rand.Intn(120)) * time.Second)
 	atomic.AddInt64(&aliveCount, 1)
 	quit := make(chan bool, 1)

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 
+	logicapi "github.com/Terry-Mao/goim/api/logic/grpc"
 	"github.com/gin-gonic/gin"
 )
 
@@ -33,9 +34,9 @@ func (s *Server) pushKeys(c *gin.Context) {
 
 func (s *Server) pushMidsWithoutKeys(c *gin.Context) {
 	var arg struct {
-		Op   int32   `form:"operation"`
-		Seq  int32   `form:"seq"`
-		Mids []int64 `form:"mids"`
+		Op   int32              `form:"operation"`
+		Seq  int32              `form:"seq"`
+		Mids []logicapi.MidType `form:"mids"`
 	}
 	if err := c.BindQuery(&arg); err != nil {
 		errors(c, RequestErr, err.Error())
@@ -67,9 +68,9 @@ func (s *Server) pushMidsWithoutKeys(c *gin.Context) {
 
 func (s *Server) pushMids(c *gin.Context) {
 	var arg struct {
-		Op   int32   `form:"operation"`
-		Seq  int32   `form:"seq"`
-		Mids []int64 `form:"mids"`
+		Op   int32              `form:"operation"`
+		Seq  int32              `form:"seq"`
+		Mids []logicapi.MidType `form:"mids"`
 	}
 	if err := c.BindQuery(&arg); err != nil {
 		errors(c, RequestErr, err.Error())

@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/bilibili/discovery/naming"
 	"github.com/BurntSushi/toml"
 	xtime "github.com/Terry-Mao/goim/pkg/time"
+	"github.com/bilibili/discovery/naming"
 )
 
 var (
@@ -191,6 +191,6 @@ type Bucket struct {
 
 // Whitelist is white list config.
 type Whitelist struct {
-	Whitelist []int64
+	Whitelist []string
 	WhiteLog  string
 }

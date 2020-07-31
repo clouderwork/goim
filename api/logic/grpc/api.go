@@ -4,6 +4,12 @@ import (
 	"fmt"
 )
 
+type MidType string
+
+func (mid MidType) IsNotZero() bool {
+	return mid != ""
+}
+
 func (m *ConnectReq) XString() string {
 	return fmt.Sprintf("server:%s token:%s", m.Server, m.Token)
 }

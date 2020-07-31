@@ -4,6 +4,7 @@ import (
 	"sync"
 
 	"github.com/Terry-Mao/goim/api/comet/grpc"
+	logicapi "github.com/Terry-Mao/goim/api/logic/grpc"
 	"github.com/Terry-Mao/goim/pkg/bufio"
 )
 
@@ -17,8 +18,9 @@ type Channel struct {
 	Next     *Channel
 	Prev     *Channel
 
-	Mid      int64
+	Mid      logicapi.MidType
 	Key      string
+	Platform string
 	IP       string
 	watchOps map[int32]struct{}
 	mutex    sync.RWMutex

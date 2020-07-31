@@ -7,7 +7,7 @@ import (
 	"strconv"
 
 	comet "github.com/Terry-Mao/goim/api/comet/grpc"
-	pb "github.com/Terry-Mao/goim/api/logic/grpc"
+	logicapi "github.com/Terry-Mao/goim/api/logic/grpc"
 	"github.com/clouderwork/workchat/api/pbrequest"
 	log "github.com/golang/glog"
 	"github.com/golang/protobuf/proto"
@@ -16,8 +16,8 @@ import (
 
 // PushMsg push a message to databus.
 func (d *Dao) PushMsg(c context.Context, op int32, seq int32, server string, keys []string, msg []byte) (err error) {
-	pushMsg := &pb.PushMsg{
-		Type:      pb.PushMsg_PUSH,
+	pushMsg := &logicapi.PushMsg{
+		Type:      logicapi.PushMsg_PUSH,
 		Operation: op,
 		Seq:       seq,
 		Server:    server,
@@ -41,8 +41,8 @@ func (d *Dao) PushMsg(c context.Context, op int32, seq int32, server string, key
 
 // BroadcastRoomMsg push a message to databus.
 func (d *Dao) BroadcastRoomMsg(c context.Context, op int32, seq int32, room string, msg []byte) (err error) {
-	pushMsg := &pb.PushMsg{
-		Type:      pb.PushMsg_ROOM,
+	pushMsg := &logicapi.PushMsg{
+		Type:      logicapi.PushMsg_ROOM,
 		Operation: op,
 		Seq:       seq,
 		Room:      room,
@@ -65,8 +65,8 @@ func (d *Dao) BroadcastRoomMsg(c context.Context, op int32, seq int32, room stri
 
 // BroadcastMsg push a message to databus.
 func (d *Dao) BroadcastMsg(c context.Context, op, seq, speed int32, msg []byte) (err error) {
-	pushMsg := &pb.PushMsg{
-		Type:      pb.PushMsg_BROADCAST,
+	pushMsg := &logicapi.PushMsg{
+		Type:      logicapi.PushMsg_BROADCAST,
 		Operation: op,
 		Seq:       seq,
 		Speed:     speed,
@@ -88,7 +88,7 @@ func (d *Dao) BroadcastMsg(c context.Context, op, seq, speed int32, msg []byte) 
 }
 
 // BroadcastMsg push a message to databus.
-func (d *Dao) Dispatch(c context.Context, mid int64, data *comet.Proto) (err error) {
+func (d *Dao) Dispatch(c context.Context, deviceID string, mid logicapi.MidType, platform string, data *comet.Proto) (err error) {
 
 	isProto := true
 
@@ -116,7 +116,7 @@ func (d *Dao) Dispatch(c context.Context, mid int64, data *comet.Proto) (err err
 	}
 
 	m := &sarama.ProducerMessage{
-		Key:   sarama.StringEncoder(strconv.FormatInt(mid, 10)),
+		Key:   sarama.StringEncoder(fmt.Sprintf("%s_%s_%s", deviceID, string(mid), platform)),
 		Topic: fmt.Sprintf("%s-%s", d.c.Kafka.CallTopicPre, request.Module),
 		Value: sarama.ByteEncoder(data.Body),
 	}
