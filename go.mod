@@ -25,6 +25,7 @@ require (
 replace (
 	cloud.google.com/go => github.com/googleapis/google-cloud-go v0.26.0
 	github.com/bilibili/discovery => github.com/clouderwork/discovery v1.1.3-0.20200729091656-642d463186b9
+	github.com/bsm/sarama-cluster => github.com/clouderwork/sarama-cluster v1.0.3-0.20200805073453-e867694c526e
 	golang.org/x/lint => github.com/golang/lint v0.0.0-20190227174305-5b3e6a55c961
 	golang.org/x/net => github.com/golang/net v0.0.0-20200707034311-ab3426394381
 	golang.org/x/oauth2 => github.com/golang/oauth2 v0.0.0-20180821212333-d2e6202438be
