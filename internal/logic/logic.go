@@ -2,6 +2,7 @@ package logic
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 	"time"
 
@@ -12,11 +13,24 @@ import (
 	ucli "github.com/clouderwork/workchat/clientlib/user"
 	log "github.com/golang/glog"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/balancer/roundrobin"
+	"google.golang.org/grpc/keepalive"
 )
 
 const (
 	_onlineTick     = time.Second * 10
 	_onlineDeadline = time.Minute * 5
+
+	minServerHeartbeat = time.Minute * 10
+	maxServerHeartbeat = time.Minute * 30
+	// grpc options
+	grpcInitialWindowSize     = 1 << 24
+	grpcInitialConnWindowSize = 1 << 24
+	grpcMaxSendMsgSize        = 1 << 24
+	grpcMaxCallMsgSize        = 1 << 24
+	grpcKeepAliveTime         = time.Second * 10
+	grpcKeepAliveTimeout      = time.Second * 3
+	grpcBackoffMaxDelay       = time.Second * 3
 )
 
 // Logic struct
@@ -36,19 +50,61 @@ type Logic struct {
 	userClient ucli.UserServiceClient
 }
 
+func newUserClient(c *conf.UserRPCClient) ucli.UserServiceClient {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(c.Dial))
+	defer cancel()
+	var (
+		conn *grpc.ClientConn
+		err  error
+	)
+	if c.Clitype == "smart" {
+		conn, err = grpc.DialContext(ctx, fmt.Sprintf("discovery://default/%s", c.Appid),
+			[]grpc.DialOption{
+				grpc.WithInsecure(),
+				grpc.WithInitialWindowSize(grpcInitialWindowSize),
+				grpc.WithInitialConnWindowSize(grpcInitialConnWindowSize),
+				grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(grpcMaxCallMsgSize)),
+				grpc.WithDefaultCallOptions(grpc.MaxCallSendMsgSize(grpcMaxSendMsgSize)),
+				grpc.WithBackoffMaxDelay(grpcBackoffMaxDelay),
+				grpc.WithKeepaliveParams(keepalive.ClientParameters{
+					Time:                grpcKeepAliveTime,
+					Timeout:             grpcKeepAliveTimeout,
+					PermitWithoutStream: true,
+				}),
+				grpc.WithBalancerName(roundrobin.Name),
+			}...)
+	} else {
+		conn, err = grpc.Dial(c.Addr,
+			[]grpc.DialOption{
+				grpc.WithInsecure(),
+				grpc.WithInitialWindowSize(grpcInitialWindowSize),
+				grpc.WithInitialConnWindowSize(grpcInitialConnWindowSize),
+				grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(grpcMaxCallMsgSize)),
+				grpc.WithDefaultCallOptions(grpc.MaxCallSendMsgSize(grpcMaxSendMsgSize)),
+				grpc.WithBackoffMaxDelay(grpcBackoffMaxDelay),
+				grpc.WithKeepaliveParams(keepalive.ClientParameters{
+					Time:                grpcKeepAliveTime,
+					Timeout:             grpcKeepAliveTimeout,
+					PermitWithoutStream: true,
+				}),
+			}...)
+	}
+	if err != nil {
+		panic(err)
+	}
+	return ucli.NewGRPCUserServiceClient(conn)
+}
+
 // New init
 func New(c *conf.Config) (l *Logic) {
-	conn, err := grpc.Dial(c.UserRPCClient.Host, grpc.WithInsecure())
-	if err != nil {
-		panic(err.Error())
-	}
+	uc := newUserClient(c.UserRPCClient)
 	l = &Logic{
 		c:            c,
 		dao:          dao.New(c),
 		dis:          naming.New(c.Discovery),
 		loadBalancer: NewLoadBalancer(),
 		regions:      make(map[string]string),
-		userClient:   ucli.NewGRPCUserServiceClient(conn),
+		userClient:   uc,
 	}
 	l.initRegions()
 	l.initNodes()

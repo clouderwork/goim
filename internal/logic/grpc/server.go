@@ -57,11 +57,11 @@ func (s *server) Close(ctx context.Context, req *logicapi.CloseReq) (*logicapi.C
 
 // Connect connect a conn.
 func (s *server) Connect(ctx context.Context, req *logicapi.ConnectReq) (*logicapi.ConnectReply, error) {
-	mid, key, room, accepts, hb, err := s.srv.Connect(ctx, req.Server, req.Cookie, req.Token)
+	mid, key, room, platform, accepts, hb, err := s.srv.Connect(ctx, req.Server, req.Cookie, req.Token)
 	if err != nil {
 		return &logicapi.ConnectReply{}, err
 	}
-	return &logicapi.ConnectReply{Mid: string(mid), Key: key, RoomID: room, Accepts: accepts, Heartbeat: hb}, nil
+	return &logicapi.ConnectReply{Mid: string(mid), Key: key, RoomID: room, Platform: platform, Accepts: accepts, Heartbeat: hb}, nil
 }
 
 // Disconnect disconnect a conn.

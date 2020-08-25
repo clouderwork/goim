@@ -37,7 +37,9 @@
     timeout = "1s"
 
 [userRpcClient]
-    host = "127.0.0.1:8800"
+    clitype = "direct" # direct/thrifty/smart
+    appid = "workchat.user"
+    addr = "127.0.0.1:8000"
     dial = "1s"
     timeout = "1s"
 

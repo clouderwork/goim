@@ -14,7 +14,7 @@ import (
 )
 
 // Connect connected a conn.
-func (l *Logic) Connect(c context.Context, server, cookie string, token []byte) (mid logicapi.MidType, key, roomID string, accepts []int32, hb int64, err error) {
+func (l *Logic) Connect(c context.Context, server, cookie string, token []byte) (mid logicapi.MidType, key, roomID string, platform string, accepts []int32, hb int64, err error) {
 	var params struct {
 		Mid      logicapi.MidType `json:"mid"`
 		Key      string           `json:"key"`
@@ -29,6 +29,7 @@ func (l *Logic) Connect(c context.Context, server, cookie string, token []byte) 
 	mid = params.Mid
 	roomID = params.RoomID
 	accepts = params.Accepts
+	platform = params.Platform
 	hb = int64(l.c.Node.Heartbeat) * int64(l.c.Node.HeartbeatMax)
 	if key = params.Key; key == "" {
 		key = uuid.New().String()
@@ -38,9 +39,10 @@ func (l *Logic) Connect(c context.Context, server, cookie string, token []byte) 
 		DeviceId:    key,
 		UserId:      string(mid),
 		WorkspaceId: roomID,
-		Platform:    params.Platform,
+		Platform:    platform,
 	}); err != nil {
 		log.Errorf("l.VerifyLoginAndDeviceOnline(%d,%s,%s) error(%v)", mid, key, server, err)
+		return
 	}
 	if err = l.dao.AddMapping(c, mid, key, server); err != nil {
 		log.Errorf("l.dao.AddMapping(%d,%s,%s) error(%v)", mid, key, server, err)

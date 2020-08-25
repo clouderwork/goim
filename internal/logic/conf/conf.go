@@ -56,7 +56,8 @@ func Default() *Config {
 			ReadTimeout:  xtime.Duration(time.Second),
 			WriteTimeout: xtime.Duration(time.Second),
 		},
-		RPCClient: &RPCClient{Dial: xtime.Duration(time.Second), Timeout: xtime.Duration(time.Second)},
+		RPCClient:     &RPCClient{Dial: xtime.Duration(time.Second), Timeout: xtime.Duration(time.Second)},
+		UserRPCClient: &UserRPCClient{Dial: xtime.Duration(time.Second), Timeout: xtime.Duration(time.Second)},
 		RPCServer: &RPCServer{
 			Network:           "tcp",
 			Addr:              "3119",
@@ -138,7 +139,9 @@ type Kafka struct {
 
 // user RPCClient is RPC client config.
 type UserRPCClient struct {
-	Host    string
+	Clitype string
+	Appid   string
+	Addr    string
 	Dial    xtime.Duration
 	Timeout xtime.Duration
 }
