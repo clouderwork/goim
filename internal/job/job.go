@@ -8,6 +8,7 @@ import (
 
 	pb "github.com/Terry-Mao/goim/api/logic/grpc"
 	"github.com/Terry-Mao/goim/internal/job/conf"
+	"github.com/Terry-Mao/goim/pkg/strings"
 	"github.com/bilibili/discovery/naming"
 	"github.com/golang/protobuf/proto"
 
@@ -29,18 +30,19 @@ type Job struct {
 func New(c *conf.Config) *Job {
 	j := &Job{
 		c:        c,
-		consumer: newKafkaSub(c.Kafka),
+		consumer: newKafkaSub(c),
 		rooms:    make(map[string]*Room),
 	}
 	j.watchComet(c.Discovery)
 	return j
 }
 
-func newKafkaSub(c *conf.Kafka) *cluster.Consumer {
+func newKafkaSub(conf *conf.Config) *cluster.Consumer {
+	c := conf.Kafka
 	config := cluster.NewConfig()
 	config.Consumer.Return.Errors = true
 	config.Group.Return.Notifications = true
-	consumer, err := cluster.NewConsumer(c.Brokers, c.Group, []string{c.Topic}, config)
+	consumer, err := cluster.NewConsumer(c.Brokers, c.Group, strings.LimitTopics(conf.Env.DeployEnv, []string{c.Topic}), config)
 	if err != nil {
 		panic(err)
 	}

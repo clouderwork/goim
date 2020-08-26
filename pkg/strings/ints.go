@@ -2,6 +2,7 @@ package strings
 
 import (
 	"bytes"
+	"fmt"
 	"strconv"
 	"strings"
 	"sync"
@@ -14,6 +15,17 @@ var (
 		},
 	}
 )
+
+func LimitTopic(namespace string, topic string) string {
+	return fmt.Sprintf("%s_%s", namespace, topic)
+}
+
+func LimitTopics(namespace string, topics []string) []string {
+	for ind := range topics {
+		topics[ind] = fmt.Sprintf("%s_%s", namespace, topics[ind])
+	}
+	return topics
+}
 
 // JoinInt32s format int32 slice like:n1,n2,n3.
 func JoinInt32s(is []int32, p string) string {

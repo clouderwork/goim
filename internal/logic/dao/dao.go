@@ -15,6 +15,7 @@ type Dao struct {
 	kafkaPub    kafka.SyncProducer
 	redis       *redis.Pool
 	redisExpire int32
+	redisPre    string
 }
 
 // New new a dao and return.
@@ -24,6 +25,7 @@ func New(c *conf.Config) *Dao {
 		kafkaPub:    newKafkaPub(c.Kafka),
 		redis:       newRedis(c.Redis),
 		redisExpire: int32(time.Duration(c.Redis.Expire) / time.Second),
+		redisPre:    c.Env.DeployEnv,
 	}
 	return d
 }

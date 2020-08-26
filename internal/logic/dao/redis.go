@@ -15,21 +15,21 @@ import (
 )
 
 const (
-	_prefixMidServer    = "mid_%s" // mid -> key:server
-	_prefixKeyServer    = "key_%s" // key -> server
-	_prefixServerOnline = "ol_%s"  // server -> online
+	_prefixMidServer    = "%s:mid_%s" // mid -> key:server
+	_prefixKeyServer    = "%s:key_%s" // key -> server
+	_prefixServerOnline = "%s:ol_%s"  // server -> online
 )
 
-func keyMidServer(mid logicapi.MidType) string {
-	return fmt.Sprintf(_prefixMidServer, string(mid))
+func keyMidServer(namespace string, mid logicapi.MidType) string {
+	return fmt.Sprintf(namespace, _prefixMidServer, string(mid))
 }
 
-func keyKeyServer(key string) string {
-	return fmt.Sprintf(_prefixKeyServer, key)
+func keyKeyServer(namespace string, key string) string {
+	return fmt.Sprintf(namespace, _prefixKeyServer, key)
 }
 
-func keyServerOnline(key string) string {
-	return fmt.Sprintf(_prefixServerOnline, key)
+func keyServerOnline(namespace string, key string) string {
+	return fmt.Sprintf(namespace, _prefixServerOnline, key)
 }
 
 // pingRedis check redis connection.
@@ -49,21 +49,21 @@ func (d *Dao) AddMapping(c context.Context, mid logicapi.MidType, key, server st
 	defer conn.Close()
 	var n = 2
 	if mid.IsNotZero() {
-		if err = conn.Send("HSET", keyMidServer(mid), key, server); err != nil {
+		if err = conn.Send("HSET", keyMidServer(d.redisPre, mid), key, server); err != nil {
 			log.Errorf("conn.Send(HSET %d,%s,%s) error(%v)", mid, server, key, err)
 			return
 		}
-		if err = conn.Send("EXPIRE", keyMidServer(mid), d.redisExpire); err != nil {
+		if err = conn.Send("EXPIRE", keyMidServer(d.redisPre, mid), d.redisExpire); err != nil {
 			log.Errorf("conn.Send(EXPIRE %d,%s,%s) error(%v)", mid, key, server, err)
 			return
 		}
 		n += 2
 	}
-	if err = conn.Send("SET", keyKeyServer(key), server); err != nil {
+	if err = conn.Send("SET", keyKeyServer(d.redisPre, key), server); err != nil {
 		log.Errorf("conn.Send(HSET %d,%s,%s) error(%v)", mid, server, key, err)
 		return
 	}
-	if err = conn.Send("EXPIRE", keyKeyServer(key), d.redisExpire); err != nil {
+	if err = conn.Send("EXPIRE", keyKeyServer(d.redisPre, key), d.redisExpire); err != nil {
 		log.Errorf("conn.Send(EXPIRE %d,%s,%s) error(%v)", mid, key, server, err)
 		return
 	}
@@ -86,13 +86,13 @@ func (d *Dao) ExpireMapping(c context.Context, mid logicapi.MidType, key string)
 	defer conn.Close()
 	var n = 1
 	if mid.IsNotZero() {
-		if err = conn.Send("EXPIRE", keyMidServer(mid), d.redisExpire); err != nil {
+		if err = conn.Send("EXPIRE", keyMidServer(d.redisPre, mid), d.redisExpire); err != nil {
 			log.Errorf("conn.Send(EXPIRE %d,%s) error(%v)", mid, key, err)
 			return
 		}
 		n++
 	}
-	if err = conn.Send("EXPIRE", keyKeyServer(key), d.redisExpire); err != nil {
+	if err = conn.Send("EXPIRE", keyKeyServer(d.redisPre, key), d.redisExpire); err != nil {
 		log.Errorf("conn.Send(EXPIRE %d,%s) error(%v)", mid, key, err)
 		return
 	}
@@ -115,13 +115,13 @@ func (d *Dao) DelMapping(c context.Context, mid logicapi.MidType, key, server st
 	defer conn.Close()
 	n := 1
 	if mid.IsNotZero() {
-		if err = conn.Send("HDEL", keyMidServer(mid), key); err != nil {
+		if err = conn.Send("HDEL", keyMidServer(d.redisPre, mid), key); err != nil {
 			log.Errorf("conn.Send(HDEL %d,%s,%s) error(%v)", mid, key, server, err)
 			return
 		}
 		n++
 	}
-	if err = conn.Send("DEL", keyKeyServer(key)); err != nil {
+	if err = conn.Send("DEL", keyKeyServer(d.redisPre, key)); err != nil {
 		log.Errorf("conn.Send(HDEL %d,%s,%s) error(%v)", mid, key, server, err)
 		return
 	}
@@ -144,7 +144,7 @@ func (d *Dao) ServersByKeys(c context.Context, keys []string) (res []string, err
 	defer conn.Close()
 	var args []interface{}
 	for _, key := range keys {
-		args = append(args, keyKeyServer(key))
+		args = append(args, keyKeyServer(d.redisPre, key))
 	}
 	if res, err = redis.Strings(conn.Do("MGET", args...)); err != nil {
 		log.Errorf("conn.Do(MGET %v) error(%v)", args, err)
@@ -158,7 +158,7 @@ func (d *Dao) KeysByMids(c context.Context, mids []logicapi.MidType) (ress map[s
 	defer conn.Close()
 	ress = make(map[string]string)
 	for _, mid := range mids {
-		if err = conn.Send("HGETALL", keyMidServer(mid)); err != nil {
+		if err = conn.Send("HGETALL", keyMidServer(d.redisPre, mid)); err != nil {
 			log.Errorf("conn.Do(HGETALL %d) error(%v)", mid, err)
 			return
 		}
@@ -196,7 +196,7 @@ func (d *Dao) AddServerOnline(c context.Context, server string, online *model.On
 		}
 		rMap[room] = count
 	}
-	key := keyServerOnline(server)
+	key := keyServerOnline(d.redisPre, server)
 	for hashKey, value := range roomsMap {
 		err = d.addServerOnline(c, key, strconv.FormatInt(int64(hashKey), 10), &model.Online{RoomCount: value, Server: online.Server, Updated: online.Updated})
 		if err != nil {
@@ -234,7 +234,7 @@ func (d *Dao) addServerOnline(c context.Context, key string, hashKey string, onl
 // ServerOnline get a server online.
 func (d *Dao) ServerOnline(c context.Context, server string) (online *model.Online, err error) {
 	online = &model.Online{RoomCount: map[string]int32{}}
-	key := keyServerOnline(server)
+	key := keyServerOnline(d.redisPre, server)
 	for i := 0; i < 64; i++ {
 		ol, err := d.serverOnline(c, key, strconv.FormatInt(int64(i), 10))
 		if err == nil && ol != nil {
@@ -272,7 +272,7 @@ func (d *Dao) serverOnline(c context.Context, key string, hashKey string) (onlin
 func (d *Dao) DelServerOnline(c context.Context, server string) (err error) {
 	conn := d.redis.Get()
 	defer conn.Close()
-	key := keyServerOnline(server)
+	key := keyServerOnline(d.redisPre, server)
 	if _, err = conn.Do("DEL", key); err != nil {
 		log.Errorf("conn.Do(DEL %s) error(%v)", key, err)
 	}

@@ -6,10 +6,10 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/BurntSushi/toml"
+	"github.com/Terry-Mao/goim/pkg/strings"
 	xtime "github.com/Terry-Mao/goim/pkg/time"
 	"github.com/bilibili/discovery/naming"
-
-	"github.com/BurntSushi/toml"
 )
 
 var (
@@ -42,6 +42,8 @@ func init() {
 func Init() (err error) {
 	Conf = Default()
 	_, err = toml.DecodeFile(confPath, &Conf)
+	Conf.Kafka.Topic = strings.LimitTopic(Conf.Env.DeployEnv, Conf.Kafka.Topic)
+	Conf.Kafka.CallTopicPre = strings.LimitTopic(Conf.Env.DeployEnv, Conf.Kafka.CallTopicPre)
 	return
 }
 
