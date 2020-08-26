@@ -1,9 +1,15 @@
 # This is a TOML document. Boom
+[env]
+    region = "sh"
+    zone = "sh001"
+    host = "workchat"
+    DeployEnv = "dev"
+
 [discovery]
     nodes = ["127.0.0.1:7171"]
     region = "sh"
     zone = "sh001"
-    host = "test1"
+    host = "workchat"
     env = "dev"
 
 [regions]
@@ -50,7 +56,7 @@
 	writeTimeout = "1s"
 
 [kafka]
-    topic = "goim-push-topic"
+    topic = "goim-push-topic-info"
     callTopicPre = "goim-push-topic" # 上行调用request的topic前缀
     brokers = ["127.0.0.1:9092"]
 

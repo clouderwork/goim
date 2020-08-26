@@ -56,6 +56,10 @@ func (c *Channel) UnWatch(accepts ...int32) {
 // NeedPush verify if in watch.
 func (c *Channel) NeedPush(op int32) bool {
 	c.mutex.RLock()
+	if len(c.watchOps) == 0 {
+		c.mutex.RUnlock()
+		return true
+	}
 	if _, ok := c.watchOps[op]; ok {
 		c.mutex.RUnlock()
 		return true

@@ -2,17 +2,17 @@
 [env]
     region = "sh"
     zone = "sh001"
-    host = "test1"
+    host = "workchat"
     DeployEnv = "dev"
 
 [discovery]
     nodes = ["127.0.0.1:7171"]
     region = "sh"
     zone = "sh001"
-    host = "test1"
+    host = "workchat"
     env = "dev"
 
 [kafka]
-    topic = "goim-push-topic"
+    topic = "goim-push-topic-info"
     group = "goim-push-group-job"
     brokers = ["127.0.0.1:9092"]
