@@ -6,7 +6,7 @@ require (
 	github.com/BurntSushi/toml v0.3.1
 	github.com/bilibili/discovery v0.0.0-00010101000000-000000000000
 	github.com/bsm/sarama-cluster v2.1.15+incompatible
-	github.com/clouderwork/workchat v0.0.0-20200825112752-23610eec2881
+	github.com/clouderwork/workchat v0.0.0-20200902155352-941eb4d57059
 	github.com/couchbase/goutils v0.0.0-20191018232750-b49639060d85 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/gin-gonic/gin v1.6.3

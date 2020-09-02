@@ -90,33 +90,21 @@ func (d *Dao) BroadcastMsg(c context.Context, op, seq, speed int32, msg []byte) 
 // BroadcastMsg push a message to databus.
 func (d *Dao) Dispatch(c context.Context, deviceID string, mid logicapi.MidType, platform string, data *comet.Proto) (err error) {
 
-	isProto := true
+	isProto := (data.Ver%2 == 0)
 
 	request := &pbrequest.Req{}
-	if err = proto.Unmarshal(data.Body, request); err != nil {
-		if err = json.Unmarshal(data.Body, request); err != nil {
-			return
-		} else {
-			isProto = false
-		}
+	if isProto {
+		err = proto.Unmarshal(data.Body, request)
+	} else {
+		err = json.Unmarshal(data.Body, request)
 	}
 
-	if request.Seq != data.Seq {
-		request.Ver = data.Ver
-		request.Op = data.Op
-		request.Seq = data.Seq
-		if isProto {
-			data.Body, err = proto.Marshal(request)
-		} else {
-			data.Body, err = json.Marshal(request)
-		}
-		if err != nil {
-			return
-		}
+	if err != nil {
+		return
 	}
 
 	m := &sarama.ProducerMessage{
-		Key:   sarama.StringEncoder(fmt.Sprintf("%s_%s_%s", deviceID, string(mid), platform)),
+		Key:   sarama.StringEncoder(fmt.Sprintf("%s_%s_%s_%d_%d", deviceID, string(mid), platform, data.Ver, data.Seq)),
 		Topic: fmt.Sprintf("%s-%s", d.c.Kafka.CallTopicPre, request.Module),
 		Value: sarama.ByteEncoder(data.Body),
 	}
