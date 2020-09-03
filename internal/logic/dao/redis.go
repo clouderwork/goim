@@ -21,15 +21,15 @@ const (
 )
 
 func keyMidServer(namespace string, mid logicapi.MidType) string {
-	return fmt.Sprintf(namespace, _prefixMidServer, string(mid))
+	return fmt.Sprintf(_prefixMidServer, namespace, string(mid))
 }
 
 func keyKeyServer(namespace string, key string) string {
-	return fmt.Sprintf(namespace, _prefixKeyServer, key)
+	return fmt.Sprintf(_prefixKeyServer, namespace, key)
 }
 
 func keyServerOnline(namespace string, key string) string {
-	return fmt.Sprintf(namespace, _prefixServerOnline, key)
+	return fmt.Sprintf(_prefixServerOnline, namespace, key)
 }
 
 // pingRedis check redis connection.
