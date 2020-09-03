@@ -20,6 +20,7 @@ message PushMsg {
     repeated string keys = 6;
     bytes msg = 7;
     int32 seq = 8;
+    int32 ver = 9;
 }
 
 message CloseReply {

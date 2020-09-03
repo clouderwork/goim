@@ -42,9 +42,9 @@ func NewRoom(job *Job, id string, c *conf.Room) (r *Room) {
 }
 
 // Push push msg to the room, if chan full discard it.
-func (r *Room) Push(op int32, seq int32, msg []byte) (err error) {
+func (r *Room) Push(op int32, seq int32, ver int32, msg []byte) (err error) {
 	var p = &comet.Proto{
-		Ver:  1,
+		Ver:  ver,
 		Op:   op,
 		Body: msg,
 		Seq:  seq,

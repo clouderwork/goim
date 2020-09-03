@@ -50,21 +50,21 @@ func (d *Dao) AddMapping(c context.Context, mid logicapi.MidType, key, server st
 	var n = 2
 	if mid.IsNotZero() {
 		if err = conn.Send("HSET", keyMidServer(d.redisPre, mid), key, server); err != nil {
-			log.Errorf("conn.Send(HSET %d,%s,%s) error(%v)", mid, server, key, err)
+			log.Errorf("conn.Send(HSET %s,%s,%s) error(%v)", mid, server, key, err)
 			return
 		}
 		if err = conn.Send("EXPIRE", keyMidServer(d.redisPre, mid), d.redisExpire); err != nil {
-			log.Errorf("conn.Send(EXPIRE %d,%s,%s) error(%v)", mid, key, server, err)
+			log.Errorf("conn.Send(EXPIRE %s,%s,%s) error(%v)", mid, key, server, err)
 			return
 		}
 		n += 2
 	}
 	if err = conn.Send("SET", keyKeyServer(d.redisPre, key), server); err != nil {
-		log.Errorf("conn.Send(HSET %d,%s,%s) error(%v)", mid, server, key, err)
+		log.Errorf("conn.Send(HSET %s,%s,%s) error(%v)", mid, server, key, err)
 		return
 	}
 	if err = conn.Send("EXPIRE", keyKeyServer(d.redisPre, key), d.redisExpire); err != nil {
-		log.Errorf("conn.Send(EXPIRE %d,%s,%s) error(%v)", mid, key, server, err)
+		log.Errorf("conn.Send(EXPIRE %s,%s,%s) error(%v)", mid, key, server, err)
 		return
 	}
 	if err = conn.Flush(); err != nil {
@@ -87,13 +87,13 @@ func (d *Dao) ExpireMapping(c context.Context, mid logicapi.MidType, key string)
 	var n = 1
 	if mid.IsNotZero() {
 		if err = conn.Send("EXPIRE", keyMidServer(d.redisPre, mid), d.redisExpire); err != nil {
-			log.Errorf("conn.Send(EXPIRE %d,%s) error(%v)", mid, key, err)
+			log.Errorf("conn.Send(EXPIRE %s,%s) error(%v)", mid, key, err)
 			return
 		}
 		n++
 	}
 	if err = conn.Send("EXPIRE", keyKeyServer(d.redisPre, key), d.redisExpire); err != nil {
-		log.Errorf("conn.Send(EXPIRE %d,%s) error(%v)", mid, key, err)
+		log.Errorf("conn.Send(EXPIRE %s,%s) error(%v)", mid, key, err)
 		return
 	}
 	if err = conn.Flush(); err != nil {
@@ -116,13 +116,13 @@ func (d *Dao) DelMapping(c context.Context, mid logicapi.MidType, key, server st
 	n := 1
 	if mid.IsNotZero() {
 		if err = conn.Send("HDEL", keyMidServer(d.redisPre, mid), key); err != nil {
-			log.Errorf("conn.Send(HDEL %d,%s,%s) error(%v)", mid, key, server, err)
+			log.Errorf("conn.Send(HDEL %s,%s,%s) error(%v)", mid, key, server, err)
 			return
 		}
 		n++
 	}
 	if err = conn.Send("DEL", keyKeyServer(d.redisPre, key)); err != nil {
-		log.Errorf("conn.Send(HDEL %d,%s,%s) error(%v)", mid, key, server, err)
+		log.Errorf("conn.Send(HDEL %s,%s,%s) error(%v)", mid, key, server, err)
 		return
 	}
 	if err = conn.Flush(); err != nil {
@@ -159,7 +159,7 @@ func (d *Dao) KeysByMids(c context.Context, mids []logicapi.MidType) (ress map[s
 	ress = make(map[string]string)
 	for _, mid := range mids {
 		if err = conn.Send("HGETALL", keyMidServer(d.redisPre, mid)); err != nil {
-			log.Errorf("conn.Do(HGETALL %d) error(%v)", mid, err)
+			log.Errorf("conn.Do(HGETALL %s) error(%v)", mid, err)
 			return
 		}
 	}

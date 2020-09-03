@@ -10,7 +10,7 @@ import (
 )
 
 // PushKeys push a message by keys.
-func (l *Logic) PushKeys(c context.Context, op int32, seq int32, keys []string, msg []byte) (err error) {
+func (l *Logic) PushKeys(c context.Context, op int32, seq int32, ver int32, keys []string, msg []byte) (err error) {
 	servers, err := l.dao.ServersByKeys(c, keys)
 	if err != nil {
 		return
@@ -23,7 +23,7 @@ func (l *Logic) PushKeys(c context.Context, op int32, seq int32, keys []string, 
 		}
 	}
 	for server := range pushKeys {
-		if err = l.dao.PushMsg(c, op, seq, server, pushKeys[server], msg); err != nil {
+		if err = l.dao.PushMsg(c, op, seq, ver, server, pushKeys[server], msg); err != nil {
 			return
 		}
 	}
@@ -31,7 +31,7 @@ func (l *Logic) PushKeys(c context.Context, op int32, seq int32, keys []string, 
 }
 
 // PushMids push a message by mid.
-func (l *Logic) PushMidsWithoutKeys(c context.Context, op int32, seq int32, mids []logicapi.MidType, withoutKeys map[string]struct{}, msg []byte) (err error) {
+func (l *Logic) PushMidsWithoutKeys(c context.Context, op int32, seq int32, ver int32, mids []logicapi.MidType, withoutKeys map[string]struct{}, msg []byte) (err error) {
 	keyServers, _, err := l.dao.KeysByMids(c, mids)
 	if err != nil {
 		return
@@ -48,7 +48,7 @@ func (l *Logic) PushMidsWithoutKeys(c context.Context, op int32, seq int32, mids
 		keys[server] = append(keys[server], key)
 	}
 	for server, keys := range keys {
-		if err = l.dao.PushMsg(c, op, seq, server, keys, msg); err != nil {
+		if err = l.dao.PushMsg(c, op, seq, ver, server, keys, msg); err != nil {
 			return
 		}
 	}
@@ -56,7 +56,7 @@ func (l *Logic) PushMidsWithoutKeys(c context.Context, op int32, seq int32, mids
 }
 
 // PushMids push a message by mid.
-func (l *Logic) PushMids(c context.Context, op int32, seq int32, mids []logicapi.MidType, msg []byte) (err error) {
+func (l *Logic) PushMids(c context.Context, op int32, seq int32, ver int32, mids []logicapi.MidType, msg []byte) (err error) {
 	keyServers, _, err := l.dao.KeysByMids(c, mids)
 	if err != nil {
 		return
@@ -70,7 +70,7 @@ func (l *Logic) PushMids(c context.Context, op int32, seq int32, mids []logicapi
 		keys[server] = append(keys[server], key)
 	}
 	for server, keys := range keys {
-		if err = l.dao.PushMsg(c, op, seq, server, keys, msg); err != nil {
+		if err = l.dao.PushMsg(c, op, seq, ver, server, keys, msg); err != nil {
 			return
 		}
 	}
@@ -78,11 +78,11 @@ func (l *Logic) PushMids(c context.Context, op int32, seq int32, mids []logicapi
 }
 
 // PushRoom push a message by room.
-func (l *Logic) PushRoom(c context.Context, op int32, seq int32, typ, room string, msg []byte) (err error) {
-	return l.dao.BroadcastRoomMsg(c, op, seq, model.EncodeRoomKey(typ, room), msg)
+func (l *Logic) PushRoom(c context.Context, op int32, seq int32, ver int32, typ, room string, msg []byte) (err error) {
+	return l.dao.BroadcastRoomMsg(c, op, seq, ver, model.EncodeRoomKey(typ, room), msg)
 }
 
 // PushAll push a message to all.
-func (l *Logic) PushAll(c context.Context, op, seq, speed int32, msg []byte) (err error) {
-	return l.dao.BroadcastMsg(c, op, seq, speed, msg)
+func (l *Logic) PushAll(c context.Context, op, seq int32, ver int32, speed int32, msg []byte) (err error) {
+	return l.dao.BroadcastMsg(c, op, seq, ver, speed, msg)
 }

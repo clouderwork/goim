@@ -15,7 +15,7 @@ import (
 )
 
 // PushMsg push a message to databus.
-func (d *Dao) PushMsg(c context.Context, op int32, seq int32, server string, keys []string, msg []byte) (err error) {
+func (d *Dao) PushMsg(c context.Context, op int32, seq int32, ver int32, server string, keys []string, msg []byte) (err error) {
 	pushMsg := &logicapi.PushMsg{
 		Type:      logicapi.PushMsg_PUSH,
 		Operation: op,
@@ -23,6 +23,7 @@ func (d *Dao) PushMsg(c context.Context, op int32, seq int32, server string, key
 		Server:    server,
 		Keys:      keys,
 		Msg:       msg,
+		Ver:       ver,
 	}
 	b, err := proto.Marshal(pushMsg)
 	if err != nil {
@@ -40,13 +41,14 @@ func (d *Dao) PushMsg(c context.Context, op int32, seq int32, server string, key
 }
 
 // BroadcastRoomMsg push a message to databus.
-func (d *Dao) BroadcastRoomMsg(c context.Context, op int32, seq int32, room string, msg []byte) (err error) {
+func (d *Dao) BroadcastRoomMsg(c context.Context, op int32, seq int32, ver int32, room string, msg []byte) (err error) {
 	pushMsg := &logicapi.PushMsg{
 		Type:      logicapi.PushMsg_ROOM,
 		Operation: op,
 		Seq:       seq,
 		Room:      room,
 		Msg:       msg,
+		Ver:       ver,
 	}
 	b, err := proto.Marshal(pushMsg)
 	if err != nil {
@@ -64,13 +66,14 @@ func (d *Dao) BroadcastRoomMsg(c context.Context, op int32, seq int32, room stri
 }
 
 // BroadcastMsg push a message to databus.
-func (d *Dao) BroadcastMsg(c context.Context, op, seq, speed int32, msg []byte) (err error) {
+func (d *Dao) BroadcastMsg(c context.Context, op, seq int32, ver int32, speed int32, msg []byte) (err error) {
 	pushMsg := &logicapi.PushMsg{
 		Type:      logicapi.PushMsg_BROADCAST,
 		Operation: op,
 		Seq:       seq,
 		Speed:     speed,
 		Msg:       msg,
+		Ver:       ver,
 	}
 	b, err := proto.Marshal(pushMsg)
 	if err != nil {
@@ -90,10 +93,10 @@ func (d *Dao) BroadcastMsg(c context.Context, op, seq, speed int32, msg []byte) 
 // BroadcastMsg push a message to databus.
 func (d *Dao) Dispatch(c context.Context, deviceID string, mid logicapi.MidType, platform string, data *comet.Proto) (err error) {
 
-	isProto := (data.Ver%2 == 0)
+	isProtobuf := (data.Ver%2 == 0) // 借用ver字段求模，来区分数据序列化协议，目前只有protobuf和json，对2求模，是0和1；如果业务场景有n种序列化协议，那么对n求模；或者改造comet.Proto，加字段支持
 
 	request := &pbrequest.Req{}
-	if isProto {
+	if isProtobuf {
 		err = proto.Unmarshal(data.Body, request)
 	} else {
 		err = json.Unmarshal(data.Body, request)

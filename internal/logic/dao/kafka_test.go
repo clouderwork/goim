@@ -15,7 +15,7 @@ func TestDaoPushMsg(t *testing.T) {
 		msg    = []byte("msg")
 		keys   = []string{"key"}
 	)
-	err := d.PushMsg(c, op, server, keys, msg)
+	err := d.PushMsg(c, op, 1, 1, server, keys, msg)
 	assert.Nil(t, err)
 }
 
@@ -26,7 +26,7 @@ func TestDaoBroadcastRoomMsg(t *testing.T) {
 		room = "test://1"
 		msg  = []byte("msg")
 	)
-	err := d.BroadcastRoomMsg(c, op, room, msg)
+	err := d.BroadcastRoomMsg(c, op, 1, 1, room, msg)
 	assert.Nil(t, err)
 }
 
@@ -37,6 +37,6 @@ func TestDaoBroadcastMsg(t *testing.T) {
 		speed = int32(0)
 		msg   = []byte("")
 	)
-	err := d.BroadcastMsg(c, op, speed, msg)
+	err := d.BroadcastMsg(c, op, 1, 1, speed, msg)
 	assert.Nil(t, err)
 }

@@ -13,11 +13,11 @@ import (
 func (j *Job) push(ctx context.Context, pushMsg *pb.PushMsg) (err error) {
 	switch pushMsg.Type {
 	case pb.PushMsg_PUSH:
-		err = j.pushKeys(pushMsg.Operation, pushMsg.Seq, pushMsg.Server, pushMsg.Keys, pushMsg.Msg)
+		err = j.pushKeys(pushMsg.Operation, pushMsg.Seq, pushMsg.Ver, pushMsg.Server, pushMsg.Keys, pushMsg.Msg)
 	case pb.PushMsg_ROOM:
-		err = j.getRoom(pushMsg.Room).Push(pushMsg.Operation, pushMsg.Seq, pushMsg.Msg)
+		err = j.getRoom(pushMsg.Room).Push(pushMsg.Operation, pushMsg.Seq, pushMsg.Ver, pushMsg.Msg)
 	case pb.PushMsg_BROADCAST:
-		err = j.broadcast(pushMsg.Operation, pushMsg.Seq, pushMsg.Msg, pushMsg.Speed)
+		err = j.broadcast(pushMsg.Operation, pushMsg.Seq, pushMsg.Ver, pushMsg.Msg, pushMsg.Speed)
 	default:
 		err = fmt.Errorf("no match push type: %s", pushMsg.Type)
 	}
@@ -25,10 +25,10 @@ func (j *Job) push(ctx context.Context, pushMsg *pb.PushMsg) (err error) {
 }
 
 // pushKeys push a message to a batch of subkeys.
-func (j *Job) pushKeys(operation int32, seq int32, serverID string, subKeys []string, body []byte) (err error) {
+func (j *Job) pushKeys(operation int32, seq int32, ver int32, serverID string, subKeys []string, body []byte) (err error) {
 	buf := bytes.NewWriterSize(len(body) + 64)
 	p := &comet.Proto{
-		Ver:  1,
+		Ver:  ver,
 		Op:   operation,
 		Body: body,
 		Seq:  seq,
@@ -51,10 +51,10 @@ func (j *Job) pushKeys(operation int32, seq int32, serverID string, subKeys []st
 }
 
 // broadcast broadcast a message to all.
-func (j *Job) broadcast(operation int32, seq int32, body []byte, speed int32) (err error) {
+func (j *Job) broadcast(operation int32, seq int32, ver int32, body []byte, speed int32) (err error) {
 	buf := bytes.NewWriterSize(len(body) + 64)
 	p := &comet.Proto{
-		Ver:  1,
+		Ver:  ver,
 		Op:   operation,
 		Body: body,
 		Seq:  seq,
@@ -83,7 +83,7 @@ func (j *Job) broadcastRoomRawBytes(roomID string, body []byte) (err error) {
 	args := comet.BroadcastRoomReq{
 		RoomID: roomID,
 		Proto: &comet.Proto{
-			Ver:  1,
+			Ver:  1, // OpRaw的都是二进制格式，需要继续按照goim的二进制协议继续解析
 			Op:   comet.OpRaw,
 			Body: body,
 		},
