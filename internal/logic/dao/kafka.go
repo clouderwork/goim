@@ -103,6 +103,7 @@ func (d *Dao) Dispatch(c context.Context, deviceID string, mid logicapi.MidType,
 	}
 
 	if err != nil {
+		log.Errorf("Dispatch.unmarshal(Call:%v) error(%v)", data, err)
 		return
 	}
 
