@@ -5,6 +5,7 @@ go 1.14
 require (
 	github.com/BurntSushi/toml v0.3.1
 	github.com/bilibili/discovery v0.0.0-00010101000000-000000000000
+	github.com/bilibili/kratos v0.3.3
 	github.com/bsm/sarama-cluster v2.1.15+incompatible
 	github.com/clouderwork/workchat v0.0.0-20200903071415-17b743c6236d
 	github.com/couchbase/goutils v0.0.0-20191018232750-b49639060d85 // indirect
