@@ -7,7 +7,7 @@ require (
 	github.com/bilibili/discovery v0.0.0-00010101000000-000000000000
 	github.com/bilibili/kratos v0.3.3
 	github.com/bsm/sarama-cluster v2.1.15+incompatible
-	github.com/clouderwork/workchat v0.0.0-20200903071415-17b743c6236d
+	github.com/clouderwork/workchat v0.0.0-20200927092326-de3afaab3eba
 	github.com/couchbase/goutils v0.0.0-20191018232750-b49639060d85 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/gin-gonic/gin v1.6.3

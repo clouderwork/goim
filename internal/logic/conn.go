@@ -21,6 +21,7 @@ func (l *Logic) Connect(c context.Context, server, cookie string, token []byte) 
 		RoomID   string           `json:"room_id"`
 		Platform string           `json:"platform"`
 		Accepts  []int32          `json:"accepts"`
+		Token    string           `json:"token"`
 	}
 	if err = json.Unmarshal(token, &params); err != nil {
 		log.Errorf("json.Unmarshal(%s) error(%v)", token, err)
@@ -40,6 +41,7 @@ func (l *Logic) Connect(c context.Context, server, cookie string, token []byte) 
 		UserId:      string(mid),
 		WorkspaceId: roomID,
 		Platform:    platform,
+		Token:       params.Token,
 	}); err != nil {
 		log.Errorf("l.VerifyLoginAndDeviceOnline(%d,%s,%s) error(%v)", mid, key, server, err)
 		return
