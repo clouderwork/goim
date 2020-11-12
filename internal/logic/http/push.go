@@ -2,7 +2,6 @@ package http
 
 import (
 	"context"
-	"encoding/json"
 	"io/ioutil"
 
 	logicapi "github.com/Terry-Mao/goim/api/logic/grpc"
@@ -39,29 +38,25 @@ func (s *Server) pushMidsWithoutKeys(c *gin.Context) {
 		Seq  int32              `form:"seq"`
 		Ver  int32              `form:"ver"`
 		Mids []logicapi.MidType `form:"mids"`
+		Keys []string           `form:"keys"`
 	}
 	if err := c.BindQuery(&arg); err != nil {
 		errors(c, RequestErr, err.Error())
 		return
 	}
 	// read message
-	data, err := ioutil.ReadAll(c.Request.Body)
+	msg, err := ioutil.ReadAll(c.Request.Body)
 	if err != nil {
 		errors(c, RequestErr, err.Error())
 		return
 	}
 
-	var body struct {
-		WithoutKeys map[string]struct{} `form:"without_keys"`
-		Msg         json.RawMessage     `json:"msg"`
-	}
-
-	if err = json.Unmarshal(data, &body); err != nil {
-		errors(c, ServerErr, err.Error())
-		return
+	withoutKeys := make(map[string]struct{}, len(arg.Keys))
+	for _, key := range arg.Keys {
+		withoutKeys[key] = struct{}{}
 	}
 	// PushMidsWithoutKeys(c context.Context, op int32, seq int32, mids []int64, withoutKeys map[string]struct{}, msg []byte) (err error)
-	if err = s.logic.PushMidsWithoutKeys(context.TODO(), arg.Op, arg.Seq, arg.Ver, arg.Mids, body.WithoutKeys, body.Msg); err != nil {
+	if err = s.logic.PushMidsWithoutKeys(context.TODO(), arg.Op, arg.Seq, arg.Ver, arg.Mids, withoutKeys, msg); err != nil {
 		errors(c, ServerErr, err.Error())
 		return
 	}
